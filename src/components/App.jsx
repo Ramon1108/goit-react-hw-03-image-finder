@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Btn from './Btn';
 import ImgGallery from './ImgGallery';
 import './App.css';
-import { fetchImgs } from './FetchImgs/FetchImgs';
+import { fetchImgs } from '../FetchImgs/FetchImgs';
 import SearchBar from './SearchBar';
 import Notiflix from 'notiflix';
 import Loader from './Loader';
@@ -37,13 +37,13 @@ class App extends Component {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
-      } else {
-        this.setState(prevState => ({
-          items: prevState.page === 1 ? hits : [...prevState.items, ...hits],
-          totalHits: totalHits,
-          status: 'resolved',
-        }));
+        return;
       }
+      this.setState({
+        totalHits: totalHits,
+        items: [...this.state.items, ...hits],
+        status: 'resolved',
+      });
     } catch (error) {
       this.setState({ status: 'rejected' });
     }
@@ -53,7 +53,7 @@ class App extends Component {
     if (inputData.trim() === '') {
       Notiflix.Notify.info('You cannot search by an empty field, try again.');
     } else {
-      this.setState({ inputData, page: 1 });
+      this.setState({ inputData, page: 1, items: [] });
     }
   };
 
@@ -72,16 +72,15 @@ class App extends Component {
           </>
         )}
         {status === 'rejected' && <p>Something went wrong, try again later.</p>}
-        {status === 'resolved' && (
-          <>
-            {items.length > 0 && (
-              <ImgGallery page={page} items={this.state.items} />
-            )}
-            {totalHits > 12 && totalHits > items.length && (
-              <Btn onClick={this.onNextPage} />
-            )}
-          </>
-        )}
+
+        <>
+          {items.length > 0 && (
+            <ImgGallery page={page} items={this.state.items} />
+          )}
+          {totalHits > 12 && totalHits > items.length && (
+            <Btn onClick={this.onNextPage} />
+          )}
+        </>
       </div>
     );
   }
